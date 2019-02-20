@@ -14,21 +14,6 @@ This package is compatible with Streaming Analytics service on IBM Cloud:
   * `IBM Cloud Machine-Learning-Service <https://console.bluemix.net/catalog/services/machine-learning>`_
 
 
-Sample
-++++++
-
-A simple example of a Streams application that uses PMML models for scoring::
-
-    from streamsx.topology.topology import *
-    from streamsx.topology.schema import CommonSchema, StreamSchema
-    from streamsx.topology.context import submit
-    import streamsx.pmml as pmml
-
-    topo = Topology()
-
-    # work in progress
-
-    submit('STREAMING_ANALYTICS_SERVICE', topo)
 
 """
 

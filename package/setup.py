@@ -4,7 +4,7 @@ setup(
   name = 'streamsx.pmml',
   packages = ['streamsx.pmml'],
   include_package_data=True,
-  version = streamsx.avro.__version__,
+  version = streamsx.pmml.__version__,
   description = 'IBM Streams PMML integration',
   long_description = open('DESC.txt').read(),
   author = 'IBM Streams @ github.com',
