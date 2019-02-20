@@ -46,20 +46,12 @@ When the documented sample must be changed, change it here:
 
 ## Test
 
-Package can be tested with TopologyTester using the [Streaming Analytics](https://www.ibm.com/cloud/streaming-analytics) service.
+Package can be tested with TopologyTester.
+
+Launch the test cases for build only verification (streamsx.topology.context.ContextTypes: TOOLKIT and BUNDLE):
 
 ```
 cd package
-python3 -u -m unittest streamsx.pmml.tests.test_pmml.TestStreamingAnalytics
+python3 -u -m unittest streamsx.pmml.tests.test_pmml.Test
 ```
 
-Package can be tested with TopologyTester using a local and running Streams domain.
-Make sure that the streams environment is set, the domain and instance is running and the environment variables:
-STREAMS_USERNAME
-STREAMS_PASSWORD
-are setup.
-
-```
-cd package
-python3 -u -m unittest streamsx.pmml.tests.test_pmml.TestDistributed
-```
