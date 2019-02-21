@@ -117,6 +117,24 @@ class Test(unittest.TestCase):
         # build only
         self._build_only(name, topo)
 
+    def test_score_with_feed_on_second_input_port(self):
+        print ('\n---------'+str(self))
+        name = 'test_score_with_feed_on_second_input_port'
+        topo = Topology(name)
+        streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
+
+        credentials = self._get_credentials()
+        models = pmml.model_feed(topo, credentials=credentials, model_name="sample_pmml", polling_period=datetime.timedelta(minutes=5))
+        # sample with a single model predictor field
+        s = topo.source(['first tuple', 'second tuple']).as_string()
+        out_schema = StreamSchema('tuple<rstring string, rstring result>')
+        res = pmml.score(s, schema=out_schema, model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
+        res.print()
+
+        # build only
+        self._build_only(name, topo)
+
+
 #class TestDistributed(Test):
 #    def setUp(self):
 #        Tester.setup_distributed(self)
