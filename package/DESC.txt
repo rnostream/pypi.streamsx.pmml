@@ -10,7 +10,7 @@ For details on WML see `Watson Machine Learning Service <https://dataplatform.cl
 
 This package is compatible with Streaming Analytics service on IBM Cloud:
 
-* `IBM Streaming Analytics <https://www.ibm.com/cloud/streaming-analytics>`_
+* `IBM Streaming Analytics <https://console.bluemix.net/catalog/services/streaming-analytics>`_
 * `IBM Cloud Machine-Learning-Service <https://console.bluemix.net/catalog/services/machine-learning>`_
 
 
