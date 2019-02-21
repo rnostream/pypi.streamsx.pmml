@@ -48,6 +48,8 @@ When the documented sample must be changed, change it here:
 
 Package can be tested with TopologyTester.
 
+It is required to specify the pmml toolkit location with the environment variable: `PMML_TOOLKIT_HOME`
+
 Launch the test cases for build only verification (streamsx.topology.context.ContextTypes: TOOLKIT and BUNDLE):
 
 ```
