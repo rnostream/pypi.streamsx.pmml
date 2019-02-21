@@ -39,7 +39,7 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
 """
 
 
-__version__='0.2.0'
+__version__='0.3.0'
 
 __all__ = ['score', 'model_feed']
 from streamsx.pmml._pmml import score, model_feed

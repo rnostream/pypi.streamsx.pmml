@@ -13,7 +13,7 @@ import datetime
 def _add_toolkit_dependency(topo):
     # IMPORTANT: Dependency of this python wrapper to a specific toolkit version
     # This is important when toolkit is not set with streamsx.spl.toolkit.add_toolkit (selecting toolkit from remote build service)
-    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '1.1.0')
+    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,3.0.0)')
 
 
 def _read_ml_service_credentials(credentials):
@@ -84,7 +84,7 @@ def model_feed(topology, credentials, model_name=None, model_uid=None, polling_p
     return _op.outputs[0]
 
 
-def score(stream, schema, model_stream=None, model_path=None, input_stream_attribute_names=None, success_attribute_name=None, error_reason_attribute_name=None, raw_result_attribute_name=None, wml_meta_data_attribute_name=None, initial_model_provisioning_timeout=None, name=None):
+def score(stream, schema, input_model_fields, input_stream_attribute_names=None, model_stream=None, model_path=None, success_attribute_name=None, error_reason_attribute_name=None, raw_result_attribute_name=None, wml_meta_data_attribute_name=None, initial_model_provisioning_timeout=None, name=None):
     """Uses the PMMLScoring operator to score tuple data.
 
     The PMMLScoring operator scores tuple data it receives on the first port, mapping input attributes to model predictors of a configurable PMML model, which may be updated via a second port during runtime. The predicted value (score) is sent together with the original input tuple and some model meta information to the ouput port.
@@ -95,9 +95,10 @@ def score(stream, schema, model_stream=None, model_path=None, input_stream_attri
     Args:
         stream(Stream): Stream of tuples containing the records to be scored.
         schema(Schema): Output streams schema
+        input_model_fields(str): Each entry maps to the entry of the input_stream_attribute_names parameter entry at the same position. 
+        input_stream_attribute_names(str): Defines the input stream attributes to be mapped on the model predictors as string list. The list has to be comma separated.
         model_stream(Stream): Stream of tuples containing new model versions and model metadata. The tuple requires the type ``com.ibm.streams.pmml::ModelData``. Connect the output stream of ``model_feed`` to this port.
         model_path(str): The path to a local model file. The file has to be in PMML format. This model is loaded on startup of the operator and used for scoring until a new model arrives at the second input port of the operator. Metadata like name, version, etc. for that model cannot be specifed. Therefore the metadata related attributes on the output port are set to 'unknown' as long as this model is used. 
-        input_stream_attribute_names(str): Defines the input stream attributes to be mapped on the model predictors as string list. The list has to be comma separated.
         success_attribute_name(str): Specify the name of an ouput Stream attribute of type 'boolean'. If set, the result of the scoring operation is stored in this attribute. The value is 'true' if the scoring succeeded, 'false' if an error occured. 
         error_reason_attribute_name(str): Specify the name of an ouput Stream attribute of type 'rstring'. If set, an error description is stored in this attribute, in case the operation failed. If the scoring operation was successful, en empty string is stored in the attribute. 
         raw_result_attribute_name(str): Use this parameter to get the model output as JSON string. It specifies the name of an output attribute of type 'rstring' that will get the JSON string. The JSON structure is an array. Each entry contains a row returned from the model after scoring the input record. The entris contain the returned value and the ResultDesciptor that contains all metadata about the entry.
@@ -116,10 +117,10 @@ def score(stream, schema, model_stream=None, model_path=None, input_stream_attri
     if model_path is not None:
         _add_model_file(stream.topology, model_path)
 
-    _op = _PMMLScoring(stream, schema=schema, model_stream=model_stream, successAttributeName=success_attribute_name, errorReasonAttributeName=error_reason_attribute_name, rawResultAttributeName=raw_result_attribute_name, wmlMetaDataAttributeName=wml_meta_data_attribute_name, name=name)
+    _op = _PMMLScoring(stream, schema=schema, model_stream=model_stream, inputModelFields=input_model_fields, successAttributeName=success_attribute_name, errorReasonAttributeName=error_reason_attribute_name, rawResultAttributeName=raw_result_attribute_name, wmlMetaDataAttributeName=wml_meta_data_attribute_name, name=name)
 
     # attributesMappingMode: positonal
-    _op.params['attributesMappingMode'] = _op.expression('positional')
+    #_op.params['attributesMappingMode'] = _op.expression('flexible')
 
     if initial_model_provisioning_timeout is not None:
         _op.params['initialModelProvisioningTimeout'] = streamsx.spl.types.int32(_check_time_param(initial_model_provisioning_timeout, 'initial_model_provisioning_timeout'))
@@ -172,8 +173,8 @@ class _PMMLScoring(streamsx.spl.op.Invoke):
         schemas=schema
         params = dict()
 
-        if attributesMappingMode is not None:
-            params['attributesMappingMode'] = attributesMappingMode
+        #if attributesMappingMode is not None:
+        #    params['attributesMappingMode'] = attributesMappingMode
         if errorReasonAttributeName is not None:
             params['errorReasonAttributeName'] = errorReasonAttributeName
         if initialModelProvisioningTimeout is not None:
@@ -182,8 +183,8 @@ class _PMMLScoring(streamsx.spl.op.Invoke):
             params['inputModelFields'] = inputModelFields
         if inputStreamAttributeNames is not None:
             params['inputStreamAttributeNames'] = inputStreamAttributeNames
-        if inputStreamAttributes is not None:
-            params['inputStreamAttributes'] = inputStreamAttributes
+        #if inputStreamAttributes is not None:
+        #    params['inputStreamAttributes'] = inputStreamAttributes
         if modelOutputAttributeMapping is not None:
             params['modelOutputAttributeMapping'] = modelOutputAttributeMapping
         if modelPath is not None:

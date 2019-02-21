@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
         streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
         s = self._create_stream(topo) # stream with two attributes id, name
         out_schema = StreamSchema('tuple<rstring success, rstring errorReason, rstring result>')
-        res = pmml.score(s, schema=out_schema, model_path=pmml_model_file(), input_stream_attribute_names='id, name', success_attribute_name='success', error_reason_attribute_name='errorReason', raw_result_attribute_name='result')
+        res = pmml.score(s, schema=out_schema, input_model_fields='field1, field2', model_path=pmml_model_file(), input_stream_attribute_names='id, name', success_attribute_name='success', error_reason_attribute_name='errorReason', raw_result_attribute_name='result')
         res.print()
         # build only
         self._build_only(name, topo)
@@ -112,7 +112,7 @@ class Test(unittest.TestCase):
         streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
         s = topo.source(['first tuple', 'second tuple']).as_string()
         out_schema = StreamSchema('tuple<rstring string, rstring result>')
-        res = pmml.score(s, schema=out_schema, model_path=pmml_model_file(), raw_result_attribute_name='result')
+        res = pmml.score(s, schema=out_schema, input_model_fields='field1', model_path=pmml_model_file(), raw_result_attribute_name='result')
         res.print()
         # build only
         self._build_only(name, topo)
@@ -128,7 +128,7 @@ class Test(unittest.TestCase):
         # sample with a single model predictor field
         s = topo.source(['first tuple', 'second tuple']).as_string()
         out_schema = StreamSchema('tuple<rstring string, rstring result>')
-        res = pmml.score(s, schema=out_schema, model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
+        res = pmml.score(s, schema=out_schema, input_model_fields='sample_field', model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
         res.print()
 
         # build only
