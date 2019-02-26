@@ -31,7 +31,7 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
     # sample with a single model predictor field
     s = topo.source(['first tuple', 'second tuple']).as_string()
     out_schema = StreamSchema('tuple<rstring string, rstring result>')
-    res = pmml.score(s, schema=out_schema, model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
+    res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='sample_predictor=string', model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
     res.print()
     submit('STREAMING_ANALYTICS_SERVICE', topo)
 
@@ -39,7 +39,7 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
 """
 
 
-__version__='0.3.0'
+__version__='0.4.0'
 
 __all__ = ['score', 'model_feed']
 from streamsx.pmml._pmml import score, model_feed
