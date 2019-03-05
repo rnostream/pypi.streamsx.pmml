@@ -20,15 +20,6 @@ def cloud_creds_env_var():
         result = False
     return result
 
-def run_shell_command_line(command):
-    process = Popen(command, universal_newlines=True, shell=True, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    return stdout, stderr, process.returncode
-
-def clean_up():
-    run_shell_command_line('rm -rf tk*') 
-    run_shell_command_line('rm -f *.sab *.json') 
-
 def pmml_model_file():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return script_dir+'/model.xml'
@@ -39,7 +30,6 @@ class Test(unittest.TestCase):
     def setUpClass(self):
         print (str(self))
         self.pmml_toolkit_home = os.environ["PMML_TOOLKIT_HOME"]
-        clean_up()
         
     def _build_only(self, name, topo):
         result = streamsx.topology.context.submit("TOOLKIT", topo.graph) # creates tk* directory
