@@ -8,11 +8,6 @@ Overview
 
 Provides functions to score input records using PMML models and to interact with the Watson Machine Learning (WML) repository.
 
-This package is compatible with Streaming Analytics service on IBM Cloud:
-
-  * `IBM Streaming Analytics <https://console.bluemix.net/catalog/services/streaming-analytics>`_
-  * `IBM Cloud Machine-Learning-Service <https://console.bluemix.net/catalog/services/machine-learning>`_
-
 
 Sample
 ++++++
@@ -34,12 +29,13 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
     res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='sample_predictor=string', model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
     res.print()
     submit('STREAMING_ANALYTICS_SERVICE', topo)
-
+    # Use for IBM Streams including IBM Cloud Private for Data
+    # submit ('DISTRIBUTED', topo)
 
 """
 
 
-__version__='0.4.0'
+__version__='0.5.0'
 
 __all__ = ['score', 'model_feed']
 from streamsx.pmml._pmml import score, model_feed

@@ -18,6 +18,12 @@ Documentation is using Sphinx and can be built locally using:
 cd package/docs
 make html
 ```
+
+or
+
+    ant doc
+
+
 and viewed using
 ```
 firefox package/docs/build/html/index.html
@@ -57,3 +63,6 @@ cd package
 python3 -u -m unittest streamsx.pmml.tests.test_pmml.Test
 ```
 
+or
+
+    ant test

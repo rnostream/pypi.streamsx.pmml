@@ -5,10 +5,10 @@ IBM Streams PMML integration
 ============================
 
 For details of implementing applications in Python
-for IBM Streams and the Streaming Analytics service
+for IBM Streams including IBM Cloud Private for Data and the Streaming Analytics service
 running on IBM Cloud see:
 
-  * `streamsx package documentation <https://streamsxtopology.readthedocs.io/en/latest/>`_
+  * `streamsx package documentation <https://streamsxtopology.readthedocs.io/en/stable>`_
 
 This package exposes SPL operators in the `com.ibm.streams.pmml` toolkit as Python methods.
 
