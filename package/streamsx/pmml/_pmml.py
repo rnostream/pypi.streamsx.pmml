@@ -8,30 +8,12 @@ import streamsx.spl.types
 from streamsx.topology.schema import CommonSchema, StreamSchema
 from streamsx.spl.types import rstring
 import datetime
-
+import json
 
 def _add_toolkit_dependency(topo):
     # IMPORTANT: Dependency of this python wrapper to a specific toolkit version
     # This is important when toolkit is not set with streamsx.spl.toolkit.add_toolkit (selecting toolkit from remote build service)
     streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,3.0.0)')
-
-
-def _read_ml_service_credentials(credentials):
-    username = None
-    password = None
-    instance_id = None
-    url = None
-    if isinstance(credentials, dict):
-        username = credentials.get('username')
-        password = credentials.get('password')
-        instance_id = credentials.get('instance_id')
-        url = credentials.get('url')
-    else:
-        raise TypeError(credentials)
-    if username is None or password is None or instance_id is None or url is None:
-        raise ValueError(credentials)
-    return username, password, instance_id, url
-
 
 def _check_time_param(time_value, parameter_name):
     if isinstance(time_value, datetime.timedelta):
@@ -49,14 +31,14 @@ def _add_model_file(topology, path):
     topology.add_file_dependency(path, 'etc')
     return 'etc/'+filename
 
-def model_feed(topology, credentials, model_name=None, model_uid=None, polling_period=None, name=None):
+def model_feed(topology, connection_configuration, model_name=None, model_uid=None, polling_period=None, name=None):
     """Downloads a Machine Learning (ML) model from the `IBM Cloud Machine-Learning-Service <https://console.bluemix.net/catalog/services/machine-learning>`_ as input for PMML ``score`` function.
 
     Models can be created and trained in Watson Studio or by using notebooks.
 
     Args:
         topology(Topology): Topology to contain the returned stream.
-        credentials(dict): The credentials of the IBM cloud Machine Learning service in *JSON*.
+        connection_configuration(dict,str): The credentials of the IBM cloud Machine Learning service in *JSON* or name of the application configuration.
         model_name(str): A model in the WML repository can be referenced by its name or UID. When you use the name, keep in mind that in the concept of the WML repository the name is ambiguous. Different models may have the same name. The only unique identifier is the model UID. Using the name may be more comfortable as the UID is a long digit string. When you are using the name, make sure that the name is unique in the WML repository. If a name is not unique, the operator will use the first model that matches the name. Use either the ``model_name`` parameter or the ``model_uid`` parameter, if both are given model_name is ignored. 
         model_uid(str): In the WML repository a models UID is a unique identifier. If the model is updated with a new version the UID is the still the same. Use either ``model_name`` or ``model_uid`` parameter, if both are given ``model_name`` is ignored. 
         polling_period(int|datetime.timedelta): The ``polling_period`` controls the interval between the calls to the WML repository. Value can be specified in seconds if 'int' type is used or in 'datetime.timedelta' format.
@@ -72,9 +54,12 @@ def model_feed(topology, credentials, model_name=None, model_uid=None, polling_p
     if (model_uid is None and model_name is None):
         raise ValueError("Use either model_name or model_uid parameter.")
 
-    username, password, instance_id, url = _read_ml_service_credentials(credentials)
+    if isinstance(connection_configuration, dict):
+        configuration = json.dumps(connection_configuration) # JSON string
+    else:
+        configuration = connection_configuration # either JSON string or app config name      
 
-    _op = _WMLModelFeed(topology, schema='com.ibm.streams.pmml::ModelData', userName=username, userPassword=password, wmlInstanceId=instance_id, wmlUrl=url, name=name)
+    _op = _WMLModelFeed(topology, schema='com.ibm.streams.pmml::ModelData', connectionConfiguration=configuration, name=name)
     if polling_period is not None:
         _op.params['pollingPeriod'] = streamsx.spl.types.int32(_check_time_param(polling_period, 'polling_period'))
     if model_uid is not None:
@@ -123,23 +108,27 @@ def score(stream, schema, model_input_attribute_mapping, model_stream=None, mode
 
 
 class _WMLModelFeed(streamsx.spl.op.Source):
-    def __init__(self, topology, schema, userName=None, userPassword=None, wmlInstanceId=None, wmlUrl=None, modelName=None, modelUid=None, pollingPeriod=None, name=None):
+    def __init__(self, topology, schema, userName=None, userPassword=None, wmlInstanceId=None, wmlUrl=None, modelName=None, modelUid=None, pollingPeriod=None, connectionConfiguration=None, name=None):
         kind="com.ibm.streams.pmml::WMLModelFeed"
         inputs=None
         schemas=schema
         params = dict()
-        # Required: userName, userPassword, wmlInstanceId, wmlUrl     
-        params['userName'] = userName
-        params['userPassword'] = userPassword
-        params['wmlInstanceId'] = wmlInstanceId
-        params['wmlUrl'] = wmlUrl
-        # Optional: modelName, modelUid, pollingPeriod
+        if userName is not None:
+            params['userName'] = userName
+        if userPassword is not None:
+            params['userPassword'] = userPassword
+        if wmlInstanceId is not None:
+            params['wmlInstanceId'] = wmlInstanceId
+        if wmlUrl is not None:
+            params['wmlUrl'] = wmlUrl
         if modelName is not None:
             params['modelName'] = modelName
         if modelUid is not None:
             params['modelUid'] = modelUid
         if pollingPeriod is not None:
             params['pollingPeriod'] = pollingPeriod
+        if connectionConfiguration is not None:
+            params['connectionConfiguration'] = connectionConfiguration
 
         super(_WMLModelFeed, self).__init__(topology,kind,schemas,params,name)
 

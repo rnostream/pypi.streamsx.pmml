@@ -53,24 +53,15 @@ class Test(unittest.TestCase):
         schema=StreamSchema('tuple<int32 id, rstring name>').as_tuple()
         return s.map(lambda x : (x,'X'+str(x*2)), schema=schema)
 
-    def test_model_feed_bad_cred_param(self):
-        print ('\n---------'+str(self))
-        topo = Topology()
-        # expect TypeError because credentials is not a dict
-        self.assertRaises(TypeError, pmml.model_feed, topo, credentials='invalid', model_name="any_model")
-        # expect ValueError because credentials is not expected JSON format
-        invalid_creds = json.loads('{"user" : "user", "password" : "xx", "uri" : "xxx"}')
-        self.assertRaises(ValueError, pmml.model_feed, topo, credentials=invalid_creds, model_name="any_model")
-
     def test_model_feed_bad_polling_time_param(self):
         print ('\n---------'+str(self))
         name = 'test_model_feed_bad_polling_time_param'
         topo = Topology(name)
         credentials = self._get_credentials()
         # expect TypeError because polling_period is wrong type (string)
-        self.assertRaises(TypeError, pmml.model_feed, topo, credentials=credentials, model_name="any_model", polling_period='1')
+        self.assertRaises(TypeError, pmml.model_feed, topo, connection_configuration=credentials, model_name="any_model", polling_period='1')
         # expect ValueError because polling_period is too small (< 1 sec)
-        self.assertRaises(ValueError, pmml.model_feed, topo, credentials=credentials, model_name="any_model", polling_period=datetime.timedelta(microseconds=50))
+        self.assertRaises(ValueError, pmml.model_feed, topo, connection_configuration=credentials, model_name="any_model", polling_period=datetime.timedelta(microseconds=50))
 
     def test_model_feed_bundle(self):
         print ('\n---------'+str(self))
@@ -78,7 +69,7 @@ class Test(unittest.TestCase):
         topo = Topology(name)
         streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
         credentials = self._get_credentials()
-        res = pmml.model_feed(topo, credentials=credentials, model_name="any_model", polling_period=datetime.timedelta(minutes=5))
+        res = pmml.model_feed(topo, connection_configuration=credentials, model_name="any_model", polling_period=datetime.timedelta(minutes=5))
         res.print()
         if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
             self._launch(topo)
@@ -123,7 +114,7 @@ class Test(unittest.TestCase):
         streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
 
         credentials = self._get_credentials()
-        models = pmml.model_feed(topo, credentials=credentials, model_name="sample_pmml", polling_period=datetime.timedelta(minutes=5))
+        models = pmml.model_feed(topo, connection_configuration=credentials, model_name="sample_pmml", polling_period=datetime.timedelta(minutes=5))
         # sample with a single model predictor field
         s = topo.source(['first tuple', 'second tuple']).as_string()
         out_schema = StreamSchema('tuple<rstring string, rstring result>')
