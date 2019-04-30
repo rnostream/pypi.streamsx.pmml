@@ -80,8 +80,11 @@ class Test(unittest.TestCase):
         credentials = self._get_credentials()
         res = pmml.model_feed(topo, credentials=credentials, model_name="any_model", polling_period=datetime.timedelta(minutes=5))
         res.print()
-        # build only
-        self._build_only(name, topo)
+        if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
+            self._launch(topo)
+        else:
+            # build only
+            self._build_only(name, topo)
 
     def test_score_bundle(self):
         print ('\n---------'+str(self))
@@ -92,8 +95,11 @@ class Test(unittest.TestCase):
         out_schema = StreamSchema('tuple<rstring success, rstring errorReason, rstring result>')
         res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='p1=id,p2=name', model_path=pmml_model_file(), success_attribute_name='success', error_reason_attribute_name='errorReason', raw_result_attribute_name='result')
         res.print()
-        # build only
-        self._build_only(name, topo)
+        if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
+            self._launch(topo)
+        else:
+            # build only
+            self._build_only(name, topo)
 
     def test_score_bundle_string_input(self):
         print ('\n---------'+str(self))
@@ -104,8 +110,11 @@ class Test(unittest.TestCase):
         out_schema = StreamSchema('tuple<rstring string, rstring result>')
         res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='p=string', model_path=pmml_model_file(), raw_result_attribute_name='result')
         res.print()
-        # build only
-        self._build_only(name, topo)
+        if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
+            self._launch(topo)
+        else:
+            # build only
+            self._build_only(name, topo)
 
     def test_score_with_feed_on_second_input_port(self):
         print ('\n---------'+str(self))
@@ -121,22 +130,46 @@ class Test(unittest.TestCase):
         res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='p=string', model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
         res.print()
 
-        # build only
-        self._build_only(name, topo)
+        if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
+            self._launch(topo)
+        else:
+            # build only
+            self._build_only(name, topo)
 
+class TestDistributed(Test):
+    def setUp(self):
+        # setup test config
+        self.test_config = {}
+        job_config = streamsx.topology.context.JobConfig(tracing='info')
+        job_config.add(self.test_config)
+        self.test_config[streamsx.topology.context.ConfigParams.SSL_VERIFY] = False  
 
-#class TestDistributed(Test):
-#    def setUp(self):
-#        Tester.setup_distributed(self)
+    def _launch(self, topo):
+        rc = streamsx.topology.context.submit('DISTRIBUTED', topo, self.test_config)
+        print(str(rc))
+        if rc is not None:
+            if (rc.return_code == 0):
+                rc.job.cancel()
 
-#class TestStreamingAnalytics(Test):
-#    def setUp(self):
-#        Tester.setup_streaming_analytics(self, force_remote_build=True)
+class TestStreamingAnalytics(Test):
+    def setUp(self):
+        # setup test config
+        self.test_config = {}
+        job_config = streamsx.topology.context.JobConfig(tracing='info')
+        job_config.add(self.test_config)
 
-#    @classmethod
-#    def setUpClass(self):
-#        # start streams service
-#        connection = sr.StreamingAnalyticsConnection()
-#        service = connection.get_streaming_analytics()
-#        result = service.start_instance()
+    def _launch(self, topo):
+        rc = streamsx.topology.context.submit('STREAMING_ANALYTICS_SERVICE', topo, self.test_config)
+        print(str(rc))
+        if rc is not None:
+            if (rc.return_code == 0):
+                rc.job.cancel()
+
+    @classmethod
+    def setUpClass(self):
+        # start streams service
+        connection = sr.StreamingAnalyticsConnection()
+        service = connection.get_streaming_analytics()
+        result = service.start_instance()
+        super().setUpClass()
 
