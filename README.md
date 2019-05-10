@@ -1,4 +1,4 @@
-# Python streamsx.pmml package 
+# Python streamsx.pmml package
 
 This exposes SPL operators in the `com.ibm.streams.pmml` toolkit as Python methods.
 
