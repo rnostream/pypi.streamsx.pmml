@@ -107,6 +107,21 @@ class Test(unittest.TestCase):
             # build only
             self._build_only(name, topo)
 
+    def test_score_bundle_output_mapping(self):
+        print ('\n---------'+str(self))
+        name = 'test_score_bundle_output_mapping'
+        topo = Topology(name)
+        streamsx.spl.toolkit.add_toolkit(topo, self.pmml_toolkit_home)
+        s = topo.source(['first tuple', 'second tuple']).as_string()
+        out_schema = StreamSchema('tuple<rstring string, rstring resultValue>')
+        res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='p=string', model_path=pmml_model_file(), model_output_attribute_mapping='resultValue=predictedValue')
+        res.print()
+        if (("TestDistributed" in str(self)) or ("TestStreamingAnalytics" in str(self))):
+            self._launch(topo)
+        else:
+            # build only
+            self._build_only(name, topo)
+
     def test_score_with_feed_on_second_input_port(self):
         print ('\n---------'+str(self))
         name = 'test_score_with_feed_on_second_input_port'
