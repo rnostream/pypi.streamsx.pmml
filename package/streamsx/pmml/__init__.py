@@ -28,7 +28,7 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
     out_schema = StreamSchema('tuple<rstring string, rstring result>')
     res = pmml.score(s, schema=out_schema, model_input_attribute_mapping='sample_predictor=string', model_stream=models, raw_result_attribute_name='result', initial_model_provisioning_timeout=datetime.timedelta(minutes=1))
     res.print()
-    # Use for IBM Streams including IBM Cloud Private for Data
+    # Use for IBM Streams including IBM Cloud Pak for Data
     submit ('DISTRIBUTED', topo)
     # Use for IBM Streaming Analytics service in IBM Cloud
     #submit('STREAMING_ANALYTICS_SERVICE', topo)
@@ -36,7 +36,7 @@ A simple example of a Streams application uses the :py:func:`model_feed` and :py
 """
 
 
-__version__='1.0.0'
+__version__='1.0.1'
 
 __all__ = ['score', 'model_feed']
 from streamsx.pmml._pmml import score, model_feed
