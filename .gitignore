@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# streamsx files
+/**/job*.tar.gz
+/**/*tk*/
+/**/*tk*.zip
+
+/**/streamsx*.sab
+/**/streamsx*.json
+
 # C extensions
 *.so
 
@@ -102,3 +110,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+.project
+
+
+.DS_Store
+/**/.DS_Store
