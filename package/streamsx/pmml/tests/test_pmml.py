@@ -10,7 +10,6 @@ import unittest
 import datetime
 import os
 import json
-from subprocess import call, Popen, PIPE
 
 def cloud_creds_env_var():
     result = True
@@ -23,6 +22,32 @@ def cloud_creds_env_var():
 def pmml_model_file():
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return script_dir+'/model.xml'
+
+
+def _test_model_feed_app_config():
+        print ('\n---------')
+        name = 'test_model_feed_create_app_config'
+        user = os.environ['STREAMS_USERNAME']
+        password = os.environ['STREAMS_PASSWORD']
+        resturl = os.environ['STREAMS_REST_URL']
+        print ('Input: '+user+password+resturl)
+        sc = sr.StreamsConnection(user,password,resturl)
+        sc.session.verify=False
+        print (sc)
+        #instances = sc.get_resources()
+        #print (instances)
+        #instance = instances[0]
+        instance = sc.get_instance("sample-icp1")
+        print ('Instance: '+str(instance))
+        connection = {'username':'your_name','password':'your_pw','instance_id':'your_id','url':'your_url'}
+        conn_name1 = pmml.configure_connection(instance=instance,connection_details=connection ,name='WML_TEST_DICT')
+        print ('AppConf1: '+conn_name1)
+        connection2 = "{'username':'your_name','password':'your_pw','instance_id':'your_id','url':'your_url'}"
+        conn_name2 = pmml.configure_connection(instance=instance,connection_details=connection2 ,name='WML_TEST_JSON')
+        print ('AppConf2: '+conn_name2)
+        app_configs = instance.get_application_configurations()
+        print (app_configs)
+
 
 class Test(unittest.TestCase):
 
@@ -53,6 +78,32 @@ class Test(unittest.TestCase):
         schema=StreamSchema('tuple<int32 id, rstring name>').as_tuple()
         return s.map(lambda x : (x,'X'+str(x*2)), schema=schema)
 
+
+    def test_model_feed_app_config(self):
+        print ('\n---------')
+        name = 'test_model_feed_create_app_config'
+        user = os.environ['STREAMS_USERNAME']
+        password = os.environ['STREAMS_PASSWORD']
+        resturl = os.environ['STREAMS_REST_URL']
+        print ('Input: '+user+password+resturl)
+        sc = sr.StreamsConnection(user,password,resturl)
+        sc.session.verify=False
+        print (sc)
+        instance = sc.get_instance("sample-icp1")
+        print ('Instance: '+str(instance))
+        connection = {'username':'your_name','password':'your_pw','instance_id':'your_id','url':'your_url'}
+        conn_name1 = pmml.configure_connection(instance=instance,connection_details=connection ,name='WML_TEST_DICT')
+        print ('AppConf1: '+conn_name1)
+        connection2 = '{"username":"your_name","password":"your_pw","instance_id":"your_id","url":"your_url"}'
+        conn_name2 = pmml.configure_connection(instance=instance,connection_details=connection2 ,name='WML_TEST_JSON')
+        print ('AppConf2: '+conn_name2)
+        app_configs = instance.get_application_configurations()
+        print (str(app_configs[0]))
+        print (str(app_configs[1]))
+        print (str(app_configs[2]))
+        print (str(app_configs[3]))
+
+
     def test_model_feed_bad_polling_time_param(self):
         print ('\n---------'+str(self))
         name = 'test_model_feed_bad_polling_time_param'
@@ -62,6 +113,7 @@ class Test(unittest.TestCase):
         self.assertRaises(TypeError, pmml.model_feed, topo, connection_configuration=credentials, model_name="any_model", polling_period='1')
         # expect ValueError because polling_period is too small (< 1 sec)
         self.assertRaises(ValueError, pmml.model_feed, topo, connection_configuration=credentials, model_name="any_model", polling_period=datetime.timedelta(microseconds=50))
+
 
     def test_model_feed_bundle(self):
         print ('\n---------'+str(self))

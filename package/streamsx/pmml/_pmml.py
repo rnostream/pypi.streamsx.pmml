@@ -31,6 +31,76 @@ def _add_model_file(topology, path):
     topology.add_file_dependency(path, 'etc')
     return 'etc/'+filename
 
+def configure_connection(instance, connection_details, name='wml_connection'):
+    """Configures IBM Streams for a certain WML connection.
+    Creates an application configuration object containing the required properties with connection information.
+    Example for creating a configuration for a Streams instance with WML connection details::
+        streamsx.rest import Instance
+        import streamsx.topology.context
+        from icpd_core import icpd_util
+        
+        cfg = icpd_util.get_service_instance_details (name='your-streams-instance')
+        cfg[streamsx.topology.context.ConfigParams.SSL_VERIFY] = False
+        instance = Instance.of_service (cfg)
+        connection = icpd_util.get_connection_details (name='your-connection-name')
+        app_cfg = configure_connection (instance, connection)
+    Args:
+        instance(streamsx.rest_primitives.Instance): IBM Streams instance object.
+        connection_details(dict/str): 
+                              dictionary defining a WML connection 
+                              {'username':'your_name', 
+                               'password':'your_pw',
+                               'instance_id':'your_id',
+                               'url':'your_url'}
+                              or
+                              JSON string as provided by the IBM Cloud WML service
+                              credentials (copy'n'paste)
+    Returns:
+        Name of the application configuration.
+
+    Raise:
+        ValueError
+        if application configuration could not be created, e.g. in case not
+        all connection information was provided
+    """
+
+    wml_keys = ["username","password","url","instance_id"]
+    wml_json_key = "jsonCredentials"
+
+    # Prepare operator (toolkit) specific properties for application configuration
+    properties = None
+
+    if isinstance(connection_details, dict):
+        if all (k in connection_details for k in wml_keys):
+            #check that all have values
+            if all (connection_details[k]!=None for k in wml_keys):
+                properties = {k:connection_details[k] for k in wml_keys}            
+        if not properties:
+            raise ValueError("Configuring application configuration failed: missing some connection details.")
+
+    if isinstance(connection_details, str):
+        try: 
+            tmp_dict = json.loads(connection_details)
+            properties = {wml_json_key:connection_details}
+        except:
+            raise ValueError("Configuring application configuration failed: invalid JSON string.")
+
+    if not properties:   
+        raise ValueError("Configuring application configuration failed: invalid input type. Use string or dictionary! ")
+    
+    # check if application configuration exists
+    app_config = instance.get_application_configurations (name = name)
+    if app_config:
+        print ('update application configuration: ' + name)
+        app_config[0].update (properties)
+    else:
+        print ('create application configuration: ' + name)
+        description = 'Config for WML connection ' + name 
+        instance.create_application_configuration (name, properties, description)
+    return name
+
+
+
 def model_feed(topology, connection_configuration, model_name=None, model_uid=None, polling_period=None, name=None):
     """Downloads a Machine Learning (ML) model from the `IBM Cloud Machine-Learning-Service <https://console.bluemix.net/catalog/services/machine-learning>`_ as input for PMML ``score`` function.
 
