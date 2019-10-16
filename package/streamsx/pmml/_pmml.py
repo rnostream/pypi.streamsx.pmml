@@ -13,7 +13,7 @@ import json
 def _add_toolkit_dependency(topo):
     # IMPORTANT: Dependency of this python wrapper to a specific toolkit version
     # This is important when toolkit is not set with streamsx.spl.toolkit.add_toolkit (selecting toolkit from remote build service)
-    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,3.0.0)')
+    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,4.0.0)')
 
 def _check_time_param(time_value, parameter_name):
     if isinstance(time_value, datetime.timedelta):
