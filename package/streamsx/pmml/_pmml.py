@@ -13,7 +13,7 @@ import json
 def _add_toolkit_dependency(topo):
     # IMPORTANT: Dependency of this python wrapper to a specific toolkit version
     # This is important when toolkit is not set with streamsx.spl.toolkit.add_toolkit (selecting toolkit from remote build service)
-    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,3.0.0)')
+    streamsx.spl.toolkit.add_toolkit_dependency(topo, 'com.ibm.streams.pmml', '[2.0.0,4.0.0)')
 
 def _check_time_param(time_value, parameter_name):
     if isinstance(time_value, datetime.timedelta):
@@ -48,8 +48,7 @@ def configure_connection(instance, connection_details, name='wml_connection'):
         instance(streamsx.rest_primitives.Instance): IBM Streams instance object.
         connection_details(dict/str): 
                               dictionary defining a WML connection 
-                              {'username':'your_name', 
-                               'password':'your_pw',
+                              {'apikey':'your_apikey', 
                                'instance_id':'your_id',
                                'url':'your_url'}
                               or
@@ -64,7 +63,7 @@ def configure_connection(instance, connection_details, name='wml_connection'):
         all connection information was provided
     """
 
-    wml_keys = ["username","password","url","instance_id"]
+    wml_keys = ["apikey","url","instance_id"]
     wml_json_key = "jsonCredentials"
 
     # Prepare operator (toolkit) specific properties for application configuration
